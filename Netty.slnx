@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="Netty.vcxproj" />
+  <Project Path="Netty.vcxproj" Id="f6da4cb9-51f8-4a61-915e-ee2a89ffae0f" />
 </Solution>

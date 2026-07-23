@@ -1,275 +1,284 @@
-// Compile with SFML 3 linked (graphics, window, system)
-// On Windows: add ws2_32.lib; SFML auto‑links if using #pragma comment.
+// Compile with SFML 3: -lsfml-graphics -lsfml-window -lsfml-network -lsfml-system
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <time.h>
+#include <SFML/Graphics.hpp>
+#include <SFML/Network.hpp>
+#include <SFML/System.hpp>
+#include <cstdio>
+#include <string>
+#include <algorithm>   // std::min
+#include <cstring>
+#include <optional>
 
-// ---------- platform adaptation ----------
-#ifdef _WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#pragma comment(lib, "ws2_32.lib")
-#define CLOSE_SOCKET(s)   closesocket(s)
-#else
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <fcntl.h>
-#define SOCKET          int
-#define CLOSE_SOCKET(s) close(s)
-#endif
-
-// ---------- error printing ----------
-static void print_error(const char* msg) {
-#ifdef _WIN32
-    fprintf(stderr, "%s: %d\n", msg, WSAGetLastError());
-#else
-    perror(msg);
-#endif
-}
-
-// ---------- set socket non‑blocking ----------
-static int set_nonblocking(SOCKET sock) {
-#ifdef _WIN32
-    u_long mode = 1;
-    return ioctlsocket(sock, FIONBIO, &mode);
-#else
-    int flags = fcntl(sock, F_GETFL, 0);
-    if (flags == -1) return -1;
-    return fcntl(sock, F_SETFL, flags | O_NONBLOCK);
-#endif
-}
-
-// ---------- simple sleep (cross‑platform) ----------
-static void sleep_ms(int ms) {
-#ifdef _WIN32
-    Sleep(ms);
-#else
-    usleep(ms * 1000);
-#endif
-}
-
-// ---------- TCP handshake server (unchanged) ----------
-static int tcp_handshake_server(unsigned short* out_client_ports) {
-    SOCKET listen_fd = socket(PF_INET, SOCK_STREAM, 0);
-    if (listen_fd < 0) { print_error("TCP socket"); return -1; }
-
-    struct sockaddr_in addr;
-    memset(&addr, 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = INADDR_ANY;
-    addr.sin_port = 0;   // OS picks a free TCP port
-
-    if (bind(listen_fd, (struct sockaddr*)&addr, sizeof(addr)) != 0) {
-        print_error("TCP bind"); CLOSE_SOCKET(listen_fd); return -1;
+// ---------- TCP handshake server (returns open TCP sockets) ----------
+static bool tcp_handshake_server(sf::TcpSocket out_tcp_sockets[2],
+    unsigned short out_client_ports[2],
+    unsigned short tcp_port)
+{
+    sf::TcpListener listener;
+    if (listener.listen(tcp_port) != sf::Socket::Status::Done) {
+        fprintf(stderr, "[Server] TCP listener failed on port %d\n", tcp_port);
+        return false;
     }
+    printf("[Server] TCP handshake on port %d\n", listener.getLocalPort());
 
-    int addr_len = sizeof(addr);
-    getsockname(listen_fd, (struct sockaddr*)&addr, &addr_len);
-    unsigned short tcp_port = ntohs(addr.sin_port);
-    printf("TCP handshake on port %d\n", tcp_port);
-
-    if (listen(listen_fd, 2) != 0) {
-        print_error("TCP listen"); CLOSE_SOCKET(listen_fd); return -1;
-    }
-
-    for (int i = 0; i < 2; i++) {
-        printf("Waiting for player %d...\n", i + 1);
-        struct sockaddr_storage caddr;
-        int caddr_len = sizeof(caddr);
-        SOCKET cfd = accept(listen_fd, (struct sockaddr*)&caddr, &caddr_len);
-        if (cfd < 0) { print_error("accept"); CLOSE_SOCKET(listen_fd); return -1; }
-
-        unsigned short server_udp_port = 12345;  // fixed UDP port
-        int player_id = i;
-        send(cfd, (const char*)&player_id, sizeof(player_id), 0);
-        send(cfd, (const char*)&server_udp_port, sizeof(server_udp_port), 0);
-
-        unsigned short client_udp_port = 0;
-        if (recv(cfd, (char*)&client_udp_port, sizeof(client_udp_port), 0) != sizeof(client_udp_port)) {
-            print_error("TCP recv client port"); CLOSE_SOCKET(cfd); CLOSE_SOCKET(listen_fd); return -1;
+    for (int i = 0; i < 2; ++i) {
+        printf("[Server] Waiting for player %d...\n", i + 1);
+        sf::TcpSocket client;
+        if (listener.accept(client) != sf::Socket::Status::Done) {
+            fprintf(stderr, "[Server] Accept failed for player %d\n", i + 1);
+            return false;
         }
-        out_client_ports[i] = client_udp_port;
-        printf("Player %d registered (UDP port %d)\n", i, client_udp_port);
 
-        CLOSE_SOCKET(cfd);
+        sf::Packet packet;
+        int player_id = i;
+        unsigned short server_udp_port = 57913;
+        packet << player_id << server_udp_port;
+        if (client.send(packet) != sf::Socket::Status::Done) {
+            fprintf(stderr, "[Server] Send to player %d failed\n", i);
+            return false;
+        }
+
+        packet.clear();
+        if (client.receive(packet) != sf::Socket::Status::Done) {
+            fprintf(stderr, "[Server] Receive from player %d failed\n", i);
+            return false;
+        }
+        unsigned short client_udp_port;
+        packet >> client_udp_port;
+        out_client_ports[i] = client_udp_port;
+
+        out_tcp_sockets[i] = std::move(client);
+        printf("[Server] Player %d registered (UDP port %d)\n", i, client_udp_port);
     }
-    CLOSE_SOCKET(listen_fd);
-    return 0;
+    return true;
 }
 
-// ---------- UDP game server (IMPROVED) ----------
-static void udp_game_server(unsigned short client_ports[2]) {
-    SOCKET udp_fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (udp_fd < 0) { print_error("UDP socket"); return; }
-
-    struct sockaddr_in server_addr;
-    memset(&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = INADDR_ANY;
-    server_addr.sin_port = htons(12345);
-
-    if (bind(udp_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) != 0) {
-        print_error("UDP bind"); CLOSE_SOCKET(udp_fd); return;
+// ---------- UDP game server ----------
+static void udp_game_server(sf::TcpSocket tcp_sockets[2],
+    const unsigned short client_ports[2])
+{
+    sf::UdpSocket udp_socket;
+    if (udp_socket.bind(57913) != sf::Socket::Status::Done) {
+        fprintf(stderr, "[Server] UDP bind failed on port 57913\n");
+        return;
     }
-    set_nonblocking(udp_fd);
+    udp_socket.setBlocking(false);
 
-    struct sockaddr_in client_addrs[2];
-    for (int i = 0; i < 2; i++) {
-        memset(&client_addrs[i], 0, sizeof(client_addrs[i]));
-        client_addrs[i].sin_family = AF_INET;
-        client_addrs[i].sin_addr.s_addr = inet_addr("127.0.0.1");
-        client_addrs[i].sin_port = htons(client_ports[i]);
-    }
+    std::optional<sf::IpAddress> client_ips[2];
+    bool client_ok_received[2] = { false, false };
+    bool client_confirmed[2] = { false, false };
 
-    float players_x[2] = { 0.0f, 0.0f };
+    printf("[Server] Waiting for UDP 'OK' from both clients...\n");
+    while (!client_confirmed[0] || !client_confirmed[1]) {
+        char buf[64];
+        std::size_t received;
+        std::optional<sf::IpAddress> sender_ip;
+        unsigned short sender_port;
 
-    const double TICK_DURATION = 1.0 / 60.0;   // 60 Hz simulation
-    clock_t previous_clock = clock();
-    double accumulator = 0.0;
-    double total_elapsed = 0.0;
-    const double MAX_GAME_TIME = 30.0;
-    int running = 1;
+        while (udp_socket.receive(buf, sizeof(buf) - 1, received,
+            sender_ip, sender_port) == sf::Socket::Status::Done) {
+            buf[received] = '\0';
 
-    printf("UDP game server started. Running for %.0f seconds...\n", MAX_GAME_TIME);
+            if (std::strcmp(buf, "OK") == 0) {
+                for (int i = 0; i < 2; ++i) {
+                    if (sender_port == client_ports[i] && !client_ok_received[i]) {
+                        client_ips[i] = sender_ip;
+                        client_ok_received[i] = true;
+                        printf("[Server] Learned endpoint for player %d: %s:%d\n",
+                            i, sender_ip->toString().c_str(), sender_port);
 
-    while (running && total_elapsed < MAX_GAME_TIME) {
-        // 1. Compute elapsed real time
-        clock_t current_clock = clock();
-        double dt = (double)(current_clock - previous_clock) / CLOCKS_PER_SEC;
-        previous_clock = current_clock;
-        total_elapsed += dt;
-        accumulator += dt;
-
-        // 2. Drain ALL pending input from the UDP socket (non‑blocking)
-        {
-            char buf[64];
-            struct sockaddr_in from;
-            socklen_t fromlen = sizeof(from);
-            int n;
-            while ((n = recvfrom(udp_fd, buf, sizeof(buf) - 1, 0,
-                (struct sockaddr*)&from, &fromlen)) > 0) {
-                buf[n] = '\0';
-
-                // Identify the sender by comparing port
-                int player_idx = -1;
-                for (int i = 0; i < 2; i++) {
-                    if (from.sin_port == client_addrs[i].sin_port) {
-                        player_idx = i;
+                        sf::Packet confirm;
+                        std::string ok_str = "OK";
+                        confirm << ok_str;
+                        if (tcp_sockets[i].send(confirm) == sf::Socket::Status::Done) {
+                            client_confirmed[i] = true;
+                            printf("[Server] TCP confirmation sent to player %d\n", i);
+                        }
+                        else {
+                            fprintf(stderr, "[Server] Failed to send TCP confirmation to player %d\n", i);
+                            client_ok_received[i] = false;
+                        }
                         break;
                     }
                 }
-
-                // Apply input to the correct player
-                if (player_idx >= 0) {
-                    if (strchr(buf, 'L')) players_x[player_idx] -= 1.0f;
-                    if (strchr(buf, 'R')) players_x[player_idx] += 1.0f;
-                }
-            }
-            // n == -1 with EAGAIN/EWOULDBLOCK means no more data – that's fine
-        }
-
-        // 3. Fixed‑step simulation & broadcast
-        while (accumulator >= TICK_DURATION) {
-            accumulator -= TICK_DURATION;
-            // (Physics / game logic would go here – currently just positions already updated by input)
-
-            // Send snapshot to all clients
-            char msg[128];
-            snprintf(msg, sizeof(msg), "P0:%.2f P1:%.2f", players_x[0], players_x[1]);
-            for (int i = 0; i < 2; i++) {
-                sendto(udp_fd, msg, (int)strlen(msg), 0,
-                    (struct sockaddr*)&client_addrs[i], sizeof(client_addrs[i]));
             }
         }
-
-        // 4. Small sleep to avoid 100% CPU (1 ms gives ~1000 Hz max poll rate)
-        sleep_ms(1);
+        sf::sleep(sf::milliseconds(10));
     }
 
-    CLOSE_SOCKET(udp_fd);
-    printf("Server finished.\n");
+    for (int i = 0; i < 2; ++i)
+        tcp_sockets[i].disconnect();
+    printf("[Server] Both clients ready. Starting game...\n");
+
+    // ---- Main game loop ----
+    float players_x[2] = { 0.0f, 0.0f };
+
+
+    double total_elapsed = 0.0;
+    const double TICK_DURATION = 1.0 / 60.0;
+    const double MAX_GAME_TIME = 30.0;
+    const sf::Time TICK_TIME = sf::seconds(1.0 / 60.0);
+    sf::Clock game_clock;
+    sf::Time accumulator = sf::Time::Zero;
+    sf::Time previous_time = game_clock.getElapsedTime();
+
+
+    while (total_elapsed < MAX_GAME_TIME) {
+        sf::Time elapsed = game_clock.restart();
+        double dt = elapsed.asSeconds();
+        total_elapsed += dt;
+        accumulator += sf::seconds(dt);
+
+        int p0Dir = 0, p1Dir = 0;
+
+        // Process incoming input (without printing every packet)
+        char buf[64];
+        std::size_t received;
+        std::optional<sf::IpAddress> sender_ip;
+        unsigned short sender_port;
+        while (udp_socket.receive(buf, sizeof(buf) - 1, received,
+            sender_ip, sender_port) == sf::Socket::Status::Done) {
+            buf[received] = '\0';
+
+            int player_idx = -1;
+            if (sender_port == client_ports[0]) player_idx = 0;
+            else if (sender_port == client_ports[1]) player_idx = 1;
+
+            if (player_idx >= 0) {
+                if (std::strchr(buf, 'L')) {
+                    if (player_idx == 0) p0Dir = -1;
+                    else                 p1Dir = -1;
+                }
+                if (std::strchr(buf, 'R')) {
+                    if (player_idx == 0) p0Dir = 1;
+                    else                 p1Dir = 1;
+                }
+            }
+        }
+
+        // Fixed timestep simulation & broadcast
+        while (accumulator >= sf::seconds(TICK_DURATION)) {
+            accumulator -= sf::seconds(TICK_DURATION);
+
+            players_x[0] += (float)(p0Dir * 300.0f * TICK_DURATION);
+            players_x[1] += (float)(p1Dir * 300.0f * TICK_DURATION);
+
+            char msg[128];
+            snprintf(msg, sizeof(msg), "P0:%.2f P1:%.2f", players_x[0], players_x[1]);
+
+            for (int i = 0; i < 2; ++i) {
+                auto status = udp_socket.send(msg, std::strlen(msg),
+                    client_ips[i].value(), client_ports[i]);
+                if (status != sf::Socket::Status::Done) {
+                    fprintf(stderr, "[Server] UDP send to player %d failed (status %d)\n",
+                        i, (int)status);
+                }
+            }
+        }
+
+        // Sleep until it's time for the next tick (saves CPU and gives consistent timing)
+        sf::Time next_tick = previous_time + TICK_TIME - sf::microseconds(500);
+        sf::Time now = game_clock.getElapsedTime();
+        if (next_tick > now)
+            sf::sleep(next_tick - now);
+    }
+
+    printf("[Server] Finished.\n");
 }
 
-
-// ---------- Server entry (unchanged) ----------
-static void server(void) {
+// ---------- Server entry ----------
+static void server() {
+    sf::TcpSocket tcp_sockets[2];
     unsigned short client_udp_ports[2];
-    if (tcp_handshake_server(client_udp_ports) != 0) {
+    if (!tcp_handshake_server(tcp_sockets, client_udp_ports, 13579)) {
         fprintf(stderr, "Handshake failed.\n");
         return;
     }
-    udp_game_server(client_udp_ports);
+    udp_game_server(tcp_sockets, client_udp_ports);
 }
 
-// ---------- Client (SFML 3) – with prediction & interpolation ----------
-#include <SFML/Graphics.hpp>
-#include <SFML/Window.hpp>
-#include <SFML/System.hpp>
-#include <string>
-#include <algorithm>   // for std::min
-
-static int tcp_handshake_client(int server_port, unsigned short* out_my_udp_port, int* out_player_id) {
-    SOCKET tcp_fd = socket(PF_INET, SOCK_STREAM, 0);
-    if (tcp_fd < 0) { print_error("TCP socket"); return -1; }
-
-    struct sockaddr_in addr;
-    memset(&addr, 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(server_port);
-    addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-
-    if (connect(tcp_fd, (struct sockaddr*)&addr, sizeof(addr)) != 0) {
-        print_error("TCP connect"); CLOSE_SOCKET(tcp_fd); return -1;
+// ---------- TCP handshake client ----------
+static sf::UdpSocket tcp_handshake_client(const sf::IpAddress& server_ip,
+    unsigned short server_tcp_port,
+    unsigned short* out_my_udp_port,
+    int* out_player_id,
+    sf::TcpSocket& out_tcp_socket)
+{
+    sf::TcpSocket tcp_socket;
+    if (tcp_socket.connect(server_ip, server_tcp_port) != sf::Socket::Status::Done) {
+        fprintf(stderr, "[Client] TCP connect to %s:%d failed\n",
+            server_ip.toString().c_str(), server_tcp_port);
+        return sf::UdpSocket();
     }
 
+    sf::Packet packet;
+    if (tcp_socket.receive(packet) != sf::Socket::Status::Done) {
+        fprintf(stderr, "[Client] TCP receive failed\n");
+        return sf::UdpSocket();
+    }
     int player_id;
     unsigned short server_udp_port;
-    if (recv(tcp_fd, (char*)&player_id, sizeof(player_id), 0) != sizeof(player_id) ||
-        recv(tcp_fd, (char*)&server_udp_port, sizeof(server_udp_port), 0) != sizeof(server_udp_port)) {
-        print_error("TCP recv"); CLOSE_SOCKET(tcp_fd); return -1;
-    }
-
-    SOCKET udp_fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (udp_fd < 0) { print_error("UDP socket"); CLOSE_SOCKET(tcp_fd); return -1; }
-    struct sockaddr_in my_addr;
-    memset(&my_addr, 0, sizeof(my_addr));
-    my_addr.sin_family = AF_INET;
-    my_addr.sin_addr.s_addr = INADDR_ANY;
-    my_addr.sin_port = 0;
-    if (bind(udp_fd, (struct sockaddr*)&my_addr, sizeof(my_addr)) != 0) {
-        print_error("UDP bind"); CLOSE_SOCKET(tcp_fd); CLOSE_SOCKET(udp_fd); return -1;
-    }
-    socklen_t len = sizeof(my_addr);
-    getsockname(udp_fd, (struct sockaddr*)&my_addr, &len);
-    unsigned short my_udp_port = ntohs(my_addr.sin_port);
-
-    send(tcp_fd, (const char*)&my_udp_port, sizeof(my_udp_port), 0);
-    CLOSE_SOCKET(tcp_fd);
-
-    *out_my_udp_port = my_udp_port;
+    packet >> player_id >> server_udp_port;
     *out_player_id = player_id;
-    return (int)udp_fd;
+
+    sf::UdpSocket udp_socket;
+    if (udp_socket.bind(sf::Socket::AnyPort) != sf::Socket::Status::Done) {
+        fprintf(stderr, "[Client] UDP bind failed\n");
+        return sf::UdpSocket();
+    }
+    *out_my_udp_port = udp_socket.getLocalPort();
+
+    packet.clear();
+    packet << *out_my_udp_port;
+    if (tcp_socket.send(packet) != sf::Socket::Status::Done) {
+        fprintf(stderr, "[Client] Send UDP port failed\n");
+        return sf::UdpSocket();
+    }
+
+    out_tcp_socket = std::move(tcp_socket);
+    return udp_socket;
 }
 
+// ---------- Client main ----------
 static void client(int server_tcp_port) {
+    const sf::IpAddress server_ip(24, 35, 13, 61);  // change to real server IP
+
     unsigned short my_udp_port;
     int player_id;
-    SOCKET udp_fd = tcp_handshake_client(server_tcp_port, &my_udp_port, &player_id);
-    if (udp_fd < 0) return;
+    sf::TcpSocket tcp_socket;
+    sf::UdpSocket udp_socket = tcp_handshake_client(server_ip, server_tcp_port,
+        &my_udp_port, &player_id,
+        tcp_socket);
+    if (udp_socket.getLocalPort() == 0)
+        return;
 
-    set_nonblocking(udp_fd);
+    udp_socket.setBlocking(false);
+    tcp_socket.setBlocking(false);
 
-    struct sockaddr_in server_addr;
-    memset(&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(12345);
-    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    const unsigned short server_udp_port = 57913;
+    bool tcp_ok_received = false;
 
-    // SFML window
+    // Reliable OK handshake
+    printf("[Client %d] Sending UDP 'OK' and waiting for TCP confirmation...\n", player_id);
+    while (!tcp_ok_received) {
+        const char* ok_msg = "OK";
+        udp_socket.send(ok_msg, std::strlen(ok_msg), server_ip, server_udp_port);
+
+        sf::Packet packet;
+        if (tcp_socket.receive(packet) == sf::Socket::Status::Done) {
+            std::string confirm;
+            packet >> confirm;
+            if (confirm == "OK") {
+                tcp_ok_received = true;
+                printf("[Client %d] Received TCP 'OK' – ready.\n", player_id);
+                break;
+            }
+        }
+        sf::sleep(sf::milliseconds(100));
+    }
+    tcp_socket.disconnect();
+
+    // ---- Graphics and game state ----
     sf::RenderWindow window(sf::VideoMode({ 800, 600 }), "Game Client");
     window.setFramerateLimit(60);
 
@@ -279,33 +288,25 @@ static void client(int server_tcp_port) {
     remote_shape.setFillColor(player_id == 0 ? sf::Color::Blue : sf::Color::Red);
 
     sf::Font font;
-    if (!font.openFromFile("bubbly.ttf")) {
-        // font not found – game still works without text
-    }
+    bool font_loaded = font.openFromFile("bubbly.ttf");
     sf::Text text(font);
     text.setCharacterSize(20);
     text.setFillColor(sf::Color::White);
 
-    // ---- client‑side prediction & interpolation state ----
-    float local_x = 0.0f;          // my predicted position
-    float remote_x = 0.0f;        // other player's interpolated position
+    float local_x = 0.0f, remote_x = 0.0f;
     int other_player = (player_id == 0) ? 1 : 0;
-
     float prev_remote_x = 0.0f, next_remote_x = 0.0f;
-    sf::Clock snapshot_clock;     // time since last snapshot
-    const float SNAPSHOT_INTERVAL = 1.0f / 60.0f;   // assume 60 Hz from server
+    sf::Clock snapshot_clock;
+    const float SNAPSHOT_INTERVAL = 1.0f / 60.0f;
 
-    bool running = true;
-
-    while (running && window.isOpen()) {
-        // --- SFML events ---
+    while (window.isOpen()) {
+        // Events
         while (auto event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>())
                 window.close();
         }
 
-        // --- SEND INPUT EVERY FRAME (no throttle) ---
-// --- SEND INPUT ONLY IF WINDOW HAS FOCUS ---
+        // Send input (no console spam)
         if (window.hasFocus()) {
             std::string input;
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) ||
@@ -316,90 +317,61 @@ static void client(int server_tcp_port) {
                 input += 'R';
 
             if (!input.empty()) {
-                sendto(udp_fd, input.c_str(), (int)input.size(), 0,
-                    (struct sockaddr*)&server_addr, sizeof(server_addr));
+                udp_socket.send(input.c_str(), input.size(),
+                    server_ip, server_udp_port);
 
-                // Client‑side prediction: apply movement immediately
-                if (input.find('L') != std::string::npos) local_x -= 1.0f;
-                if (input.find('R') != std::string::npos) local_x += 1.0f;
+                // Client-side prediction
+                const float step = 300.0f * (1.0f / 60.0f);
+                if (input.find('L') != std::string::npos) local_x -= step;
+                if (input.find('R') != std::string::npos) local_x += step;
             }
         }
 
-        // --- RECEIVE SERVER STATE ---
+        // Receive server state (without printing)
         char buf[128];
-        int n = recvfrom(udp_fd, buf, sizeof(buf) - 1, 0, NULL, NULL);
-        if (n > 0) {
-            buf[n] = '\0';
+        std::size_t received;
+        std::optional<sf::IpAddress> sender;
+        unsigned short sender_port;
+        while (udp_socket.receive(buf, sizeof(buf) - 1, received,
+            sender, sender_port) == sf::Socket::Status::Done) {
+            buf[received] = '\0';
+
             float p0, p1;
-            if (sscanf(buf, "P0:%f P1:%f", &p0, &p1) == 2) {
-                // Update remote player interpolation targets
+            if (std::sscanf(buf, "P0:%f P1:%f", &p0, &p1) == 2) {
                 prev_remote_x = next_remote_x;
                 next_remote_x = (other_player == 0) ? p0 : p1;
                 snapshot_clock.restart();
-
-                // Reconciliation: snap local player to server's authoritative position
-                float server_my_x = (player_id == 0) ? p0 : p1;
-                local_x = server_my_x;   // (will be smoothly corrected later)
+                local_x = (player_id == 0) ? p0 : p1;   // reconciliation
             }
         }
 
-        // --- INTERPOLATE REMOTE PLAYER ---
+        // Interpolate remote player
         float elapsed = snapshot_clock.getElapsedTime().asSeconds();
         float t = std::min<float>(elapsed / SNAPSHOT_INTERVAL, 1.0f);
         remote_x = prev_remote_x + t * (next_remote_x - prev_remote_x);
 
-        // --- RENDER ---
+        // Render
         window.clear();
-
-        const float scale = 50.f;
-        // Local player (predicted position)
-        local_shape.setPosition({ local_x * scale + 400.f, 300.f });
-        // Remote player (interpolated position)
-        remote_shape.setPosition({ remote_x * scale + 400.f, 350.f });
-
+        local_shape.setPosition({ local_x, 300.f });
+        remote_shape.setPosition({ remote_x, 350.f });
         window.draw(local_shape);
         window.draw(remote_shape);
-
-        // Display info
-        char info[128];
-        snprintf(info, sizeof(info), "Player %d  me: %.2f  other: %.2f", player_id, local_x, remote_x);
-        text.setString(info);
-        window.draw(text);
-
+        if (font_loaded) {
+            char info[128];
+            snprintf(info, sizeof(info), "Player %d  me: %.2f  other: %.2f",
+                player_id, local_x, remote_x);
+            text.setString(info);
+            window.draw(text);
+        }
         window.display();
     }
-
-    CLOSE_SOCKET(udp_fd);
 }
 
-// ---------- Main (unchanged) ----------
+// ---------- Main ----------
 int main(int argc, char* argv[]) {
-#ifdef _WIN32
-    WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-        fprintf(stderr, "WSAStartup failed\n");
-        return 1;
-    }
-#endif
-
-    int ret = 0;
-    if (argc > 1 && !strcmp(argv[1], "client")) {
-        if (argc != 3) {
-            fprintf(stderr, "Usage: %s client <server_tcp_port>\n", argv[0]);
-            ret = -1;
-            goto cleanup;
-        }
-        int tcp_port;
-        sscanf(argv[2], "%d", &tcp_port);
-        client(tcp_port);
-    }
-    else {
+    if (argc > 1 && std::strcmp(argv[1], "client") == 0)
+        client(13579);
+    else
         server();
-    }
-
-cleanup:
-#ifdef _WIN32
-    WSACleanup();
-#endif
-    return ret;
+    return 0;
 }
