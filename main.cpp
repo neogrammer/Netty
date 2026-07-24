@@ -214,7 +214,7 @@ static void udp_game_server(sf::TcpSocket tcp_sockets[2],
     //    }
     int p0Facing = 1;  // 1 = right, 0 = left
     int p1Facing = 1;
-    while (total_elapsed < MAX_GAME_TIME) {
+    while (true) {
         sf::Time dt = gameClock.restart();
         total_elapsed += dt.asSeconds();
         accumulator += dt;
