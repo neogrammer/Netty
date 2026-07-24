@@ -8,6 +8,33 @@
 #include <cstring>
 #include <algorithm>
 
+#include <csignal>
+#include <atomic>
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <signal.h>
+#endif
+
+// Global flag – set to false when Ctrl+C is pressed
+std::atomic<bool> g_running{ true };
+
+#ifdef _WIN32
+BOOL WINAPI consoleHandler(DWORD signal) {
+    if (signal == CTRL_C_EVENT) {
+        g_running = false;
+        return TRUE;  // handled
+    }
+    return FALSE;
+}
+#else
+void signalHandler(int /*signal*/) {
+    g_running = false;
+}
+#endif
+
+
 static void udp_game_server(sf::TcpSocket tcp_sockets[2],
     const unsigned short client_ports[2])
 {
@@ -100,7 +127,7 @@ static void udp_game_server(sf::TcpSocket tcp_sockets[2],
     int p0Facing = 1;   // 1 = right, 0 = left
     int p1Facing = 1;
 
-    while (true) {
+    while (g_running) {
         sf::Time dt = gameClock.restart();
         accumulator += dt;
 
@@ -178,10 +205,21 @@ static void udp_game_server(sf::TcpSocket tcp_sockets[2],
             sf::sleep(next_tick - now);
     }
 
+    printf("[Server] Shutting down...\n");
+    for (int i = 0; i < 2; ++i)
+        tcp_sockets[i].disconnect();
+    udp_socket.unbind();
     printf("[Server] Finished.\n");
 }
 
 void run_server() {
+    // Install Ctrl+C handler
+#ifdef _WIN32
+    SetConsoleCtrlHandler(consoleHandler, TRUE);
+#else
+    signal(SIGINT, signalHandler);
+#endif
+
     sf::TcpSocket tcp_sockets[2];
     unsigned short client_udp_ports[2];
     if (!tcp_handshake_server(tcp_sockets, client_udp_ports, 13579)) {
