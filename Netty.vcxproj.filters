@@ -13,15 +13,69 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\entities">
+      <UniqueIdentifier>{594f5a50-edbf-45f9-b035-08ad90fc5f60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\entities\animation">
+      <UniqueIdentifier>{ea2ddbfa-7f68-4d5d-8153-d0da2c2bb03a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\mgmt">
+      <UniqueIdentifier>{de05c0dd-a38c-4473-beeb-50d836582e1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\game_states">
+      <UniqueIdentifier>{36fa7a2f-ce38-45c1-bd07-a2141dbd6acc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\network">
+      <UniqueIdentifier>{301facb7-dee5-4eba-b2b7-5a85e22d2ff9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\network\server">
+      <UniqueIdentifier>{eed7eed9-8221-4115-9023-8b88722004ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\network\client">
+      <UniqueIdentifier>{4db8730e-8926-412c-8192-11c05261b9d7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\entities\Entity.cpp">
+      <Filter>Source Files\entities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\network\NetworkCommon.cpp">
+      <Filter>Source Files\network</Filter>
+    </ClCompile>
+    <ClCompile Include="src\network\server\Server.cpp">
+      <Filter>Source Files\network\server</Filter>
+    </ClCompile>
+    <ClCompile Include="src\network\client\Client.cpp">
+      <Filter>Source Files\network\client</Filter>
+    </ClCompile>
+    <ClCompile Include="NetTypes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\entities\animation\AnimationSet.cpp">
+      <Filter>Source Files\entities\animation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetTypes.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\entities\Entity.h">
+      <Filter>Source Files\entities</Filter>
+    </ClInclude>
+    <ClInclude Include="src\network\NetworkCommon.h">
+      <Filter>Source Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="src\network\server\Server.h">
+      <Filter>Source Files\network\server</Filter>
+    </ClInclude>
+    <ClInclude Include="src\network\client\Client.h">
+      <Filter>Source Files\network\client</Filter>
+    </ClInclude>
+    <ClInclude Include="src\entities\animation\AnimationSet.h">
+      <Filter>Source Files\entities\animation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

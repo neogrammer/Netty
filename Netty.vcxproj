@@ -71,7 +71,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\tools\SFML3\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\dev\Netty\src;C:\dev\Netty;C:\tools\SFML3\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\tools\SFML3\lib\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -146,9 +146,22 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="NetTypes.cpp" />
+    <ClCompile Include="src\entities\Entity.cpp" />
+    <ClCompile Include="src\network\client\Client.cpp" />
+    <ClCompile Include="src\network\NetworkCommon.cpp" />
+    <ClCompile Include="src\network\server\Server.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetTypes.h" />
+    <ClInclude Include="src\entities\Entity.h" />
+    <ClInclude Include="src\network\client\Client.h" />
+    <ClInclude Include="src\network\NetworkCommon.h" />
+    <ClInclude Include="src\network\server\Server.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\entities\animation\AnimationSet.cpp" />
+    <ClInclude Include="src\entities\animation\AnimationSet.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
