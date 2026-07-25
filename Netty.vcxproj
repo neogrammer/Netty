@@ -146,18 +146,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="NetTypes.cpp" />
     <ClCompile Include="src\entities\Entity.cpp" />
     <ClCompile Include="src\game_states\levels\Level.cpp" />
     <ClCompile Include="src\game_states\PlayState.cpp" />
     <ClCompile Include="src\game_states\TitleState.cpp" />
     <ClCompile Include="src\mgmt\GameStateManager.cpp" />
     <ClCompile Include="src\network\client\Client.cpp" />
+    <ClCompile Include="src\network\NetTypes.cpp" />
     <ClCompile Include="src\network\NetworkCommon.cpp" />
     <ClCompile Include="src\network\server\Server.cpp" />
+    <ClCompile Include="src\res\Cfg.cpp" />
+    <ClCompile Include="src\res\LevelResources.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="NetTypes.h" />
     <ClInclude Include="src\entities\Entity.h" />
     <ClInclude Include="src\game_states\GameState.h" />
     <ClInclude Include="src\game_states\levels\Level.h" />
@@ -165,12 +166,20 @@
     <ClInclude Include="src\game_states\TitleState.h" />
     <ClInclude Include="src\mgmt\GameStateManager.h" />
     <ClInclude Include="src\network\client\Client.h" />
+    <ClInclude Include="src\network\NetTypes.h" />
     <ClInclude Include="src\network\NetworkCommon.h" />
     <ClInclude Include="src\network\server\Server.h" />
+    <ClInclude Include="src\res\Cfg.h" />
+    <ClInclude Include="src\res\LevelResources.h" />
+    <ClInclude Include="src\res\ResourceManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\entities\animation\AnimationSet.cpp" />
     <ClInclude Include="src\entities\animation\AnimationSet.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\res\tpl\LevelResources.tpl" />
+    <None Include="src\res\tpl\ResourceManager.tpl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

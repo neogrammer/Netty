@@ -4,7 +4,7 @@
 #include <array>
 #include <vector>
 #include <optional>
-#include <NetTypes.h>   // AnimType
+#include <network/NetTypes.h>   // AnimType
 
 struct AnimationSet {
     std::unordered_map<AnimType, sf::Texture*> animMap;
@@ -16,4 +16,4 @@ struct AnimationSet {
 };
 
 // Fills the set with player-specific data. Textures must outlive the AnimationSet.
-void initPlayerAnimations(AnimationSet& animSet, sf::Texture& idleTex, sf::Texture& walkTex);
+void initPlayerAnimations(AnimationSet& animSet);

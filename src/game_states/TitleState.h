@@ -1,7 +1,7 @@
 // PlayState.h
 #pragma once
 #include <game_states/GameState.h>
-#include <NetTypes.h>
+#include <network/NetTypes.h>
 #include <entities/Entity.h>
 #include <entities/animation/AnimationSet.h>
 #include <SFML/Network.hpp>

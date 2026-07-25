@@ -50,7 +50,20 @@ void PlayState::update(sf::Time dt) {
         uint32_t currTick = snapState.curr.frameNumber;
         currentRenderTick = prevTick + t * (currTick - prevTick);
         interpolateEntities(currentRenderTick);
-		printf("[Client %d] Interpolated entities at render tick %.2f\n", playerId, currentRenderTick);
+        // if no snapshot came in, we still interpolated, so we can do collision detection here on the client
+        // collide check all entities here and store em in a list of collisions, then sort by time of collision, then resolve them in order
+        // then update positions and velocities accordingly, dont worry about the animation, just keep running the one it interpolated. 
+        // else then 
+        // if the snapshots came in, then we just interpolated to the latest snapshot, and trust the server to have done collision detection and resolution, so we dont need to do it here.
+        // end if
+
+        // everything is in its final spot for this frame, now for the player entity, interpolate the center of the client view to snap to keep the player in the center of the screen if it can scroll,
+        // and while int the center of the screen, slowly interpolate to the player center to keep the player centered but snap hard when they go out of boundarys if the screen can scroll, 
+        // or snap view to bounds of level and background
+
+        // good to draw the frame now
+
+        printf("[Client %d] Interpolated entities at render tick %.2f\n", playerId, currentRenderTick);
     }
 }
 
@@ -58,6 +71,11 @@ void PlayState::draw(sf::RenderWindow& window) {
     printf("[Client %d] Drawing %zu entities\n", playerId, entities.size());
     window.clear();
 
+	// draw parallax background here
+
+    // draw part of map that is on same level as player, the ground
+
+    // draw the game entities
     for (auto& [id, ent] : entities) {
         if (!ent.sprite) continue;
 
@@ -103,6 +121,13 @@ void PlayState::draw(sf::RenderWindow& window) {
         ent.sprite->setPosition({ ent.x, ent.y });
         window.draw(*ent.sprite);
     }
+
+	// draw any info overlays like damage
+
+	// draw foreground elements like trees, walls, etc.
+
+	// draw UI elements like health bars, score, etc.
+
     window.display();
 }
 

@@ -1,4 +1,4 @@
-#include <NetTypes.h>
+#include <network/NetTypes.h>
 
 
 // ---------- NetMsgType ----------

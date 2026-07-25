@@ -37,6 +37,12 @@
     <Filter Include="Source Files\game_states\levels">
       <UniqueIdentifier>{65e3f5ec-bdaf-4ee7-b5bc-88c65493b41b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\res">
+      <UniqueIdentifier>{f78705a3-7a34-4afc-badd-e39e39ca3742}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\res\tpl">
+      <UniqueIdentifier>{02608976-848c-4084-9b85-ec6925de487f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -54,9 +60,6 @@
     <ClCompile Include="src\network\client\Client.cpp">
       <Filter>Source Files\network\client</Filter>
     </ClCompile>
-    <ClCompile Include="NetTypes.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\entities\animation\AnimationSet.cpp">
       <Filter>Source Files\entities\animation</Filter>
     </ClCompile>
@@ -72,11 +75,17 @@
     <ClCompile Include="src\game_states\TitleState.cpp">
       <Filter>Source Files\game_states</Filter>
     </ClCompile>
+    <ClCompile Include="src\network\NetTypes.cpp">
+      <Filter>Source Files\network</Filter>
+    </ClCompile>
+    <ClCompile Include="src\res\Cfg.cpp">
+      <Filter>Source Files\res</Filter>
+    </ClCompile>
+    <ClCompile Include="src\res\LevelResources.cpp">
+      <Filter>Source Files\res</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="NetTypes.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\entities\Entity.h">
       <Filter>Source Files\entities</Filter>
     </ClInclude>
@@ -107,5 +116,25 @@
     <ClInclude Include="src\game_states\TitleState.h">
       <Filter>Source Files\game_states</Filter>
     </ClInclude>
+    <ClInclude Include="src\network\NetTypes.h">
+      <Filter>Source Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="src\res\Cfg.h">
+      <Filter>Source Files\res</Filter>
+    </ClInclude>
+    <ClInclude Include="src\res\ResourceManager.h">
+      <Filter>Source Files\res</Filter>
+    </ClInclude>
+    <ClInclude Include="src\res\LevelResources.h">
+      <Filter>Source Files\res</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\res\tpl\ResourceManager.tpl">
+      <Filter>Source Files\res\tpl</Filter>
+    </None>
+    <None Include="src\res\tpl\LevelResources.tpl">
+      <Filter>Source Files\res\tpl</Filter>
+    </None>
   </ItemGroup>
 </Project>

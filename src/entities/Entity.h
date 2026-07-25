@@ -2,7 +2,7 @@
 #include <memory>
 #include <SFML/Graphics.hpp>
 #include <unordered_map>
-#include <NetTypes.h>
+#include <network/NetTypes.h>
 #include <entities/animation/AnimationSet.h>
 
 struct ClientEntity {

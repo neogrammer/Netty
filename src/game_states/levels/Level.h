@@ -1,6 +1,6 @@
 // Level.h
 #pragma once
-#include "NetTypes.h"
+#include <network/NetTypes.h>
 #include <vector>
 #include <string>
 #include <unordered_map>

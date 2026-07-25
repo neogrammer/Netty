@@ -1,7 +1,13 @@
 #include "AnimationSet.h"
+#include <res/Cfg.h>
+#include <res/LevelResources.h>
 
-void initPlayerAnimations(AnimationSet& animSet, sf::Texture& idleTex, sf::Texture& walkTex) 
+
+void initPlayerAnimations(AnimationSet& animSet) 
 {
+	auto& idleTex = Cfg::textures.get((int)Cfg::Textures::Player_Idle);
+	auto& walkTex = Cfg::textures.get((int)Cfg::Textures::Player_Walk);
+
     // ----- Idle -----
     animSet.animMap[AnimType::Idle] = &idleTex;
     animSet.frameCounts[AnimType::Idle] = 8;
