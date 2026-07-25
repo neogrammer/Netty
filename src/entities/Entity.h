@@ -9,7 +9,7 @@ struct ClientEntity {
     std::unique_ptr<sf::Sprite> sprite;
     AnimationSet* animSet = nullptr;
     AnimType currentAnim = AnimType::Idle;
-    uint16_t animStartTick = 0;
+    uint32_t animStartTick = 0;
     float x = 0.f, y = 0.f;
 
     ClientEntity() = default;

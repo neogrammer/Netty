@@ -34,6 +34,9 @@
     <Filter Include="Source Files\network\client">
       <UniqueIdentifier>{4db8730e-8926-412c-8192-11c05261b9d7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\game_states\levels">
+      <UniqueIdentifier>{65e3f5ec-bdaf-4ee7-b5bc-88c65493b41b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -57,6 +60,18 @@
     <ClCompile Include="src\entities\animation\AnimationSet.cpp">
       <Filter>Source Files\entities\animation</Filter>
     </ClCompile>
+    <ClCompile Include="src\game_states\levels\Level.cpp">
+      <Filter>Source Files\game_states\levels</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mgmt\GameStateManager.cpp">
+      <Filter>Source Files\mgmt</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game_states\PlayState.cpp">
+      <Filter>Source Files\game_states</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game_states\TitleState.cpp">
+      <Filter>Source Files\game_states</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetTypes.h">
@@ -76,6 +91,21 @@
     </ClInclude>
     <ClInclude Include="src\entities\animation\AnimationSet.h">
       <Filter>Source Files\entities\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game_states\levels\Level.h">
+      <Filter>Source Files\game_states\levels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game_states\GameState.h">
+      <Filter>Source Files\game_states</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mgmt\GameStateManager.h">
+      <Filter>Source Files\mgmt</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game_states\PlayState.h">
+      <Filter>Source Files\game_states</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game_states\TitleState.h">
+      <Filter>Source Files\game_states</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

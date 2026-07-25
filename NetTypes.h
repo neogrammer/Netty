@@ -12,16 +12,24 @@
  inline float unquantise(int32_t q) { return static_cast<float>(q) / QUANT_SCALE; }
 
 // ---------- Packet types ----------
-enum class NetMsgType : uint8_t { SpawnEntity = 1, DestroyEntity = 2, FrameSnapshot = 3 };
+enum class NetMsgType : uint8_t { SpawnEntity = 1, DestroyEntity = 2, FrameSnapshot = 3, AssignPlayerEntity = 4 };
+
 
 // ---------- Entity structures ----------
+enum class EntityType : uint8_t {
+    Player = 0,
+    Goblin = 1,
+    Projectile = 2,
+    NPC = 3,
+};
 
 // Server-side entity (includes state needed for game logic)
 struct Entity {
-    uint32_t id;
-    float x, y;
+    uint32_t id = 0;
+    EntityType type = EntityType::NPC;
+    float x = 0.f, y = 0.f;
     uint8_t animation = 0;
-    uint16_t animStartTick = 0;   // server tick when animation changed
+    uint32_t animStartTick = 0;
 };
 
 // Snapshot entry sent in each frame (only dynamic data)
@@ -29,16 +37,11 @@ struct EntitySnapshot {
     uint32_t entityId;
     int32_t x_quant, y_quant;
     uint8_t animation;
-    uint16_t animStartTick;       // client uses this to compute animation frame
+    uint32_t animStartTick;       // client uses this to compute animation frame
     uint8_t flags;                // e.g., bit0 = facing right
 };
 
-enum class EntityType : uint8_t {
-    Player = 0,
-    Goblin = 1,
-    Projectile = 2,
-    NPC = 3,
-};
+
 
 enum class AnimType : uint8_t {
     Idle = 0,
@@ -57,6 +60,10 @@ struct SpawnMessage {
 
 // Sent when an entity leaves (reliable)
 struct DestroyMessage {
+    uint32_t entityId;
+};
+
+struct AssignPlayerMessage {
     uint32_t entityId;
 };
 
@@ -88,3 +95,6 @@ sf::Packet& operator>>(sf::Packet& p, DestroyMessage& msg);
 // ---------- FrameSnapshot ----------
 sf::Packet& operator<<(sf::Packet& p, const FrameSnapshot& snap);
 sf::Packet& operator>>(sf::Packet& p, FrameSnapshot& snap); 
+
+sf::Packet& operator<<(sf::Packet& p, const AssignPlayerMessage& msg); 
+sf::Packet& operator>>(sf::Packet& p, AssignPlayerMessage& msg);

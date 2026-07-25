@@ -148,6 +148,10 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NetTypes.cpp" />
     <ClCompile Include="src\entities\Entity.cpp" />
+    <ClCompile Include="src\game_states\levels\Level.cpp" />
+    <ClCompile Include="src\game_states\PlayState.cpp" />
+    <ClCompile Include="src\game_states\TitleState.cpp" />
+    <ClCompile Include="src\mgmt\GameStateManager.cpp" />
     <ClCompile Include="src\network\client\Client.cpp" />
     <ClCompile Include="src\network\NetworkCommon.cpp" />
     <ClCompile Include="src\network\server\Server.cpp" />
@@ -155,6 +159,11 @@
   <ItemGroup>
     <ClInclude Include="NetTypes.h" />
     <ClInclude Include="src\entities\Entity.h" />
+    <ClInclude Include="src\game_states\GameState.h" />
+    <ClInclude Include="src\game_states\levels\Level.h" />
+    <ClInclude Include="src\game_states\PlayState.h" />
+    <ClInclude Include="src\game_states\TitleState.h" />
+    <ClInclude Include="src\mgmt\GameStateManager.h" />
     <ClInclude Include="src\network\client\Client.h" />
     <ClInclude Include="src\network\NetworkCommon.h" />
     <ClInclude Include="src\network\server\Server.h" />

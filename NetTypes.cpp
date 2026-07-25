@@ -74,3 +74,10 @@ sf::Packet& operator>>(sf::Packet& p, FrameSnapshot& snap) {
     for (auto& e : snap.entities) p >> e;
     return p;
 }
+
+sf::Packet& operator<<(sf::Packet& p, const AssignPlayerMessage& msg) {
+    return p << msg.entityId;
+}
+sf::Packet& operator>>(sf::Packet& p, AssignPlayerMessage& msg) {
+    return p >> msg.entityId;
+}
