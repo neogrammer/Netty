@@ -16,13 +16,7 @@ class PlayState : public IGameState {
 public:
     PlayState(sf::RenderWindow* win, ClientContext& ctx,
         const std::unordered_map<EntityType, AnimationSet*>& animSets);
-        //sf::UdpSocket* udp,
-        //sf::TcpSocket* tcp,
-        //const sf::IpAddress& serverIp,
-        //unsigned short serverPort,
-        //int playerId,
-        //const std::unordered_map<EntityType, AnimationSet*>& animSets);
-
+        
     void enter() override;
     void exit() override;
     void handleEvent(const sf::Event&) override;
@@ -53,25 +47,3 @@ private:
     // existing helpers (slightly modified to use context.myEntityId)
     void interpolateEntities(float renderTick);
 };
-//    uint32_t myEntityId = 0xFFFFFFFF;
-//
-//    // Snapshot interpolation state
-//    struct {
-//        FrameSnapshot prev;
-//        FrameSnapshot curr;
-//        sf::Time      lastSnapTime;
-//        bool          hasPrev = false;
-//    } snapState;
-//
-//    sf::Clock interpClock;
-//    const sf::Time tickDuration = sf::seconds(1.f / 60.f);
-//
-//    // Current render tick (for animation frame calculation)
-//    float currentRenderTick = 0.f;
-//
-//    // Helpers
-//    void processTCPMessages();
-//    void sendInput();
-//    void processSnapshots();
-//    void interpolateEntities(float renderTick);
-//};

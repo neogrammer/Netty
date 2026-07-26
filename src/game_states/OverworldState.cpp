@@ -17,16 +17,7 @@ void OverworldState::enter() {
     }
     // Load zone assets
     zoneRes.loadForScene(zone, false);
-    // Now the texture should be loaded; get it safely
-    //if (zoneRes.textures.isLoaded((int)Cfg::Textures::Zone1_Map)) {
-    //    auto& tex = zoneRes.textures.get((int)Cfg::Textures::Zone1_Map);
-    //    mapSprite = std::make_unique<sf::Sprite>(tex);
-    //    mapSprite->setTexture(tex);
-    //    mapSprite->setTextureRect({ { 0,0 }, { sf::Vector2i(tex.getSize()) } });
-    //}
-    //else {
-    //    printf("[OverworldState] Zone1_Map texture not loaded!\n");
-    //}
+  
     // Create the map sprite once the texture is available
     auto zoneMapId = static_cast<int>(Cfg::Textures::Zone1_Map);
     if (zoneRes.textures.isLoaded(zoneMapId)) {
@@ -79,31 +70,6 @@ void OverworldState::update(sf::Time dt) {
     }
     context.pendingDestroys.clear();
 
-    //// Process snapshot if new one arrived
-    //if (context.hasSnapshot) {
-    //    NetMsgType type;
-    //    context.latestSnapshot >> type;   // should be FrameSnapshot
-    //    snapState.prev = std::move(snapState.curr);
-    //    context.latestSnapshot >> snapState.curr;
-    //    snapState.lastSnapTime = interpClock.getElapsedTime();
-    //    snapState.hasPrev = true;
-    //    context.hasSnapshot = false;
-    //}
-
-
-    // Input sending is handled centrally in run_client, so nothing here.
-    // Entities are updated by snapshots received centrally and stored in our entities map.
-    // Interpolation:
-    //currentRenderTick = 0.f;
-    //if (snapState.hasPrev) {
-    //    sf::Time now = interpClock.getElapsedTime();
-    //    float t = ((now - snapState.lastSnapTime).asSeconds()) / tickDuration.asSeconds();
-    //    t = std::min(t, 1.0f);
-    //    uint32_t prevTick = snapState.prev.frameNumber;
-    //    uint32_t currTick = snapState.curr.frameNumber;
-    //    currentRenderTick = prevTick + t * (currTick - prevTick);
-    //    interpolateEntities(currentRenderTick);
-    //}
 }
 
 void OverworldState::draw(sf::RenderWindow& window) {
@@ -121,14 +87,6 @@ void OverworldState::draw(sf::RenderWindow& window) {
     }
 
     window.display();
-    //window.draw(mapSprite);
-    //for (auto& [id, ent] : entities) {
-    //    if (ent.sprite) {
-    //        ent.sprite->setPosition({ ent.x, ent.y });
-    //        window.draw(*ent.sprite);
-    //    }
-    //}
-    //window.display();
 }
 
 void OverworldState::interpolateEntities(float renderTick) {
@@ -157,22 +115,6 @@ void OverworldState::interpolateEntities(float renderTick) {
         }
         it->second.x = x;
         it->second.y = y;
-        if (snapEnt.entityId == 0) {   // the remote player on Client 1
-            // printf("[Client %d] Entity 0: raw=(%d,%d) unq=(%.1f,%.1f) prev raw? %s -> final x=%.1f (t=%.2f)\n",
-            //     playerId,
-            //     snapEnt.x_quant, snapEnt.y_quant,
-            //     unquantise(snapEnt.x_quant), unquantise(snapEnt.y_quant),
-            //     prevIt != snapState.prev.entities.end() ? "yes" : "no",
-            //     x, t);
-        }
-        if (snapEnt.entityId == 1) {   // remote player for client 0
-            // printf("[Client %d] Entity 1: raw=(%d,%d) unq=(%.1f,%.1f) prev raw? %s -> final x=%.1f (t=%.2f)\n",
-            //     playerId,
-            //     snapEnt.x_quant, snapEnt.y_quant,
-            //     unquantise(snapEnt.x_quant), unquantise(snapEnt.y_quant),
-            //     prevIt != snapState.prev.entities.end() ? "yes" : "no",
-            //     x, t);
-        }
 
         AnimType newAnim = static_cast<AnimType>(snapEnt.animation);
         if (newAnim != it->second.currentAnim) {

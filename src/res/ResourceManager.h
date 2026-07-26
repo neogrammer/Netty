@@ -30,24 +30,6 @@ private:
     std::unordered_map<IDENTIFIER, std::unique_ptr<RESOURCE>> _map;
 };
 
-//template<typename IDENTIFIER>
-//struct ResourceManager<sf::Music, IDENTIFIER>
-//{
-//    ResourceManager() = default;
-//
-//    ResourceManager(const ResourceManager&) = delete;
-//    ResourceManager& operator=(const ResourceManager&) = delete;
-//
-//
-//    template<typename ... Args>
-//    void load(const IDENTIFIER& id, Args&& ... args);
-//
-//    sf::Music& get(const IDENTIFIER& id)const;
-//
-//private:
-//    std::unordered_map<IDENTIFIER, std::unique_ptr<sf::Music>> _map;
-//};
-
 template<typename IDENTIFIER>
 struct ResourceManager<sf::Font, IDENTIFIER>
 {
