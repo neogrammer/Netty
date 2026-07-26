@@ -55,7 +55,7 @@ void run_client(int server_tcp_port) {
         { EntityType::Player, &playerAnimSet }
     };
 
-    sf::RenderWindow window(sf::VideoMode({ 800, 600 }), "Game Client");
+    sf::RenderWindow window(sf::VideoMode({ 1600, 900 }), "Game Client");
     window.setFramerateLimit(60);
 
     // Create game state manager and register states

@@ -20,9 +20,19 @@ struct Cfg
 	static void Initialize();
 
 	// Resource Enums 
-	enum class Textures : int { 
+	enum class Textures : int {
+
+		// Global Textures
 		Player_Idle, Player_Walk,
-		Level1Background, Level1Middle, Count, None };
+		Level1Background, Level1Middle, 
+
+		// Level Textures
+		L1_Foreground, L1_BgMid_Far, L1_BgMid_Mid, L1_BgMid_Near, L1_BgFar,
+		
+		// Overworld textures
+		Zone1_Map, Zone1_Icons,
+
+		Count, None };
 	enum class Fonts : int { Bubbly, Count, None };
 
 

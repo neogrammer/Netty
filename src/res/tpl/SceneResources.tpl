@@ -4,7 +4,7 @@
 #include <SFML/Graphics.hpp>
 
 template<typename ResType>
-void LevelResources::syncManager(
+void SceneResources::syncManager(
     ResourceManager<ResType, int>& manager,
     std::unordered_set<int>& loadedSet,
     const std::unordered_set<int>& neededSet,

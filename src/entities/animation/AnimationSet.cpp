@@ -1,6 +1,6 @@
 #include "AnimationSet.h"
 #include <res/Cfg.h>
-#include <res/LevelResources.h>
+#include <res/SceneResources.h>
 
 
 void initPlayerAnimations(AnimationSet& animSet) 

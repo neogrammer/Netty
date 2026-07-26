@@ -81,7 +81,7 @@
     <ClCompile Include="src\res\Cfg.cpp">
       <Filter>Source Files\res</Filter>
     </ClCompile>
-    <ClCompile Include="src\res\LevelResources.cpp">
+    <ClCompile Include="src\res\SceneResources.cpp">
       <Filter>Source Files\res</Filter>
     </ClCompile>
   </ItemGroup>
@@ -125,7 +125,7 @@
     <ClInclude Include="src\res\ResourceManager.h">
       <Filter>Source Files\res</Filter>
     </ClInclude>
-    <ClInclude Include="src\res\LevelResources.h">
+    <ClInclude Include="src\res\SceneResources.h">
       <Filter>Source Files\res</Filter>
     </ClInclude>
   </ItemGroup>
@@ -133,7 +133,7 @@
     <None Include="src\res\tpl\ResourceManager.tpl">
       <Filter>Source Files\res\tpl</Filter>
     </None>
-    <None Include="src\res\tpl\LevelResources.tpl">
+    <None Include="src\res\tpl\SceneResources.tpl">
       <Filter>Source Files\res\tpl</Filter>
     </None>
   </ItemGroup>

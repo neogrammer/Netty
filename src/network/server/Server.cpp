@@ -44,7 +44,7 @@ void signalHandler(int /*signal*/) {
 
 // ---------- Camera helper ----------
 sf::FloatRect getPlayerCamera(float playerX, float playerY) {
-    return sf::FloatRect({ playerX - 400.f, playerY - 300.f }, { 800.f, 600.f });
+    return sf::FloatRect({ playerX - 800.f, playerY - 450.f }, { 1600.f, 900.f });
 }
 
 // ---------- Main server function ----------

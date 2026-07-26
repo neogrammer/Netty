@@ -4,13 +4,13 @@
 #include <unordered_set>
 #include <functional>
 
-class LevelResources
+class SceneResources
 {
 public:
     ResourceManager<sf::Texture, int> textures{};
     ResourceManager<sf::Font, int> fonts{};
 
-    void loadForLevel(int levelNum);
+    void loadForScene(int sceneId, bool isLevel = true);
     void clear();
 
 private:
@@ -20,11 +20,10 @@ private:
 
     // Sync a single resource manager with the required ID set.
     template<typename ResType>
-    void syncManager(
-        ResourceManager<ResType, int>& manager,
+    void syncManager(ResourceManager<ResType, int>& manager,
         std::unordered_set<int>& loadedSet,
         const std::unordered_set<int>& neededSet,
         const std::function<std::string(int)>& pathProvider);
 };
 
-#include "tpl/LevelResources.tpl"
+#include "tpl/SceneResources.tpl"

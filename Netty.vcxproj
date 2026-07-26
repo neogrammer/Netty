@@ -156,7 +156,7 @@
     <ClCompile Include="src\network\NetworkCommon.cpp" />
     <ClCompile Include="src\network\server\Server.cpp" />
     <ClCompile Include="src\res\Cfg.cpp" />
-    <ClCompile Include="src\res\LevelResources.cpp" />
+    <ClCompile Include="src\res\SceneResources.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\entities\Entity.h" />
@@ -170,7 +170,7 @@
     <ClInclude Include="src\network\NetworkCommon.h" />
     <ClInclude Include="src\network\server\Server.h" />
     <ClInclude Include="src\res\Cfg.h" />
-    <ClInclude Include="src\res\LevelResources.h" />
+    <ClInclude Include="src\res\SceneResources.h" />
     <ClInclude Include="src\res\ResourceManager.h" />
   </ItemGroup>
   <ItemGroup>
@@ -178,7 +178,7 @@
     <ClInclude Include="src\entities\animation\AnimationSet.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\res\tpl\LevelResources.tpl" />
+    <None Include="src\res\tpl\SceneResources.tpl" />
     <None Include="src\res\tpl\ResourceManager.tpl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
