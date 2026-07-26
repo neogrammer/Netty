@@ -210,16 +210,16 @@ static void udp_game_server(sf::TcpSocket tcp_sockets[2],
                     printf("[Server] Player %d is ready\n", idx);
 
                     // When both are ready, send them into the game
-                    if (playerReady[0] && playerReady[1]) {
+                   // if (playerReady[0] && playerReady[1]) {
                         // Send a LoadLevel (or LoadZone) to both clients
                         LoadLevelMessage levelMsg{ 1 };   // level 1
-                        for (int i = 0; i < 2; ++i) {
+                        //for (int i = 0; i < 2; ++i) {
                             sf::Packet p;
                             p << NetMsgType::LoadLevel << levelMsg;
-                            tcp_sockets[i].send(p);
-                        }
-                        printf("[Server] Both ready – loading zone 1\n");
-                    }
+                            tcp_sockets[idx].send(p);
+                       // }
+                        //printf("[Server] Both ready – loading zone 1\n");
+                   // }
                 }
                 continue;   // don't try to parse this as movement input
             }

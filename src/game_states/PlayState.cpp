@@ -101,10 +101,18 @@ void PlayState::update(sf::Time dt) {
 
     // Process snapshot if new one arrived
     if (context.hasSnapshot) {
-        NetMsgType type;
-        context.latestSnapshot >> type;   // should be FrameSnapshot
+        //NetMsgType type;
+        //context.latestSnapshot >> type;   // should be FrameSnapshot
         snapState.prev = std::move(snapState.curr);
         context.latestSnapshot >> snapState.curr;
+        printf("[Client %d] Got snapshot frame %u with %zu entities\n",
+            context.playerId, snapState.curr.frameNumber, snapState.curr.entities.size());
+        if (!snapState.curr.entities.empty()) {
+            for (auto& e : snapState.curr.entities) {
+                printf("   entity %u: x_quant=%d y_quant=%d anim=%u tick=%u\n",
+                    e.entityId, e.x_quant, e.y_quant, e.animation, e.animStartTick);
+            }
+        }
         snapState.lastSnapTime = interpClock.getElapsedTime();
         snapState.hasPrev = true;
         context.hasSnapshot = false;
@@ -290,7 +298,13 @@ void PlayState::draw(sf::RenderWindow& window) {
 //    }
 //}
 void PlayState::interpolateEntities(float renderTick) {
+
+    printf("[Client %d] Interpolating with currentRenderTick=%.2f\n",
+        context.playerId, renderTick);
+
     if (!snapState.hasPrev) return;
+
+
 
     float t = 0.f;
     if (snapState.curr.frameNumber != snapState.prev.frameNumber) {
@@ -315,6 +329,7 @@ void PlayState::interpolateEntities(float renderTick) {
         }
         it->second.x = x;
         it->second.y = y;
+        it->second.animStartTick = snapEnt.animStartTick;
         if (snapEnt.entityId == 0) {   // the remote player on Client 1
             // printf("[Client %d] Entity 0: raw=(%d,%d) unq=(%.1f,%.1f) prev raw? %s -> final x=%.1f (t=%.2f)\n",
             //     playerId,
@@ -332,10 +347,10 @@ void PlayState::interpolateEntities(float renderTick) {
             //     x, t);
         }
 
-        AnimType newAnim = static_cast<AnimType>(snapEnt.animation);
-        if (newAnim != it->second.currentAnim) {
-            it->second.currentAnim = newAnim;
-            it->second.animStartTick = snapEnt.animStartTick;
-        }
+        //AnimType newAnim = static_cast<AnimType>(snapEnt.animation);
+        //if (newAnim != it->second.currentAnim) {
+        //    it->second.currentAnim = newAnim;
+        //    it->second.animStartTick = snapEnt.animStartTick;
+        //}
     }
 }
