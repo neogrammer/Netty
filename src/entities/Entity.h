@@ -23,3 +23,4 @@ struct ClientEntity {
 std::pair<bool, ClientEntity> createClientEntity(
     const std::unordered_map<EntityType, AnimationSet*>& entityAnimSets,
     EntityType type, float x, float y);
+

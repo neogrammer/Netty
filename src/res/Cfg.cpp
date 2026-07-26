@@ -15,6 +15,8 @@ void Cfg::initTextures()
 {
     textures.load((int)Textures::Player_Idle, "assets/textures/player/idle.png");
     textures.load((int)Textures::Player_Walk, "assets/textures/player/walk.png");
+    textures.load((int)Textures::None, "assets/textures/none.png");
+
 }
 
 

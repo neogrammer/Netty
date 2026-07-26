@@ -21,5 +21,14 @@ std::pair<bool, ClientEntity> createClientEntity(
     if (texIt != ent.animSet->animMap.end() && texIt->second)
         ent.sprite = std::make_unique<sf::Sprite>(*texIt->second);
 
+    // Set the initial texture rect to the first idle frame (facing right)
+    if (ent.animSet) {
+        auto& anim = *ent.animSet;
+        auto cur = AnimType::Idle;
+        if (anim.animRects.count(cur) && !anim.animRects[cur][1].empty()) { // 1 = right
+            ent.sprite->setTextureRect(anim.animRects[cur][1][0]);
+        }
+    }
+
     return { true, std::move(ent) };
 }

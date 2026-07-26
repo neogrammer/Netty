@@ -43,6 +43,30 @@
     <Filter Include="Source Files\res\tpl">
       <UniqueIdentifier>{02608976-848c-4084-9b85-ec6925de487f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\game_states\zones">
+      <UniqueIdentifier>{20169ba7-6764-433b-a49c-1460f997eff0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\assets">
+      <UniqueIdentifier>{4581c281-0d4b-476c-8a93-0b8e2544ba45}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\assets\textures">
+      <UniqueIdentifier>{d063b4a7-c428-44e9-be96-48270223b7e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\assets\fonts">
+      <UniqueIdentifier>{c64fd8f0-3248-4ec6-8da0-f9f85e0a41b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\assets\textures\levels">
+      <UniqueIdentifier>{abe44ab2-0f48-4ae2-ba23-0ffd3050394b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\assets\textures\levels\level1">
+      <UniqueIdentifier>{d126a3f0-0de3-497b-841a-502bca9a9e1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\assets\textures\player">
+      <UniqueIdentifier>{60055dbc-c66c-4aad-9ba2-d42a9597b4a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\assets\textures\zones">
+      <UniqueIdentifier>{fd9ec0c5-bd86-4d86-87c3-8e59367d69d1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -83,6 +107,9 @@
     </ClCompile>
     <ClCompile Include="src\res\SceneResources.cpp">
       <Filter>Source Files\res</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game_states\OverworldState.cpp">
+      <Filter>Source Files\game_states</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -128,6 +155,12 @@
     <ClInclude Include="src\res\SceneResources.h">
       <Filter>Source Files\res</Filter>
     </ClInclude>
+    <ClInclude Include="src\network\client\ClientContext.h">
+      <Filter>Source Files\network\client</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game_states\OverworldState.h">
+      <Filter>Source Files\game_states</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\res\tpl\ResourceManager.tpl">
@@ -136,5 +169,37 @@
     <None Include="src\res\tpl\SceneResources.tpl">
       <Filter>Source Files\res\tpl</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="assets\textures\levels\level1\L1_BgFar.png">
+      <Filter>Resource Files\assets\textures\levels\level1</Filter>
+    </Image>
+    <Image Include="assets\textures\levels\level1\L1_BgMid_Far.png">
+      <Filter>Resource Files\assets\textures\levels\level1</Filter>
+    </Image>
+    <Image Include="assets\textures\levels\level1\L1_BgMid_Mid.png">
+      <Filter>Resource Files\assets\textures\levels\level1</Filter>
+    </Image>
+    <Image Include="assets\textures\levels\level1\L1_BgMid_Near.png">
+      <Filter>Resource Files\assets\textures\levels\level1</Filter>
+    </Image>
+    <Image Include="assets\textures\levels\level1\L1_Foreground.png">
+      <Filter>Resource Files\assets\textures\levels\level1</Filter>
+    </Image>
+    <Image Include="assets\textures\player\idle.png">
+      <Filter>Resource Files\assets\textures\player</Filter>
+    </Image>
+    <Image Include="assets\textures\player\walk.png">
+      <Filter>Resource Files\assets\textures\player</Filter>
+    </Image>
+    <Image Include="assets\textures\zones\Zone1_Icons.png">
+      <Filter>Resource Files\assets\textures\zones</Filter>
+    </Image>
+    <Image Include="assets\textures\zones\Zone1_Map.jpg">
+      <Filter>Resource Files\assets\textures\zones</Filter>
+    </Image>
+    <Image Include="assets\textures\none.png">
+      <Filter>Resource Files\assets\textures</Filter>
+    </Image>
   </ItemGroup>
 </Project>

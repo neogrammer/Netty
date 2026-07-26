@@ -12,7 +12,14 @@
  inline float unquantise(int32_t q) { return static_cast<float>(q) / QUANT_SCALE; }
 
 // ---------- Packet types ----------
-enum class NetMsgType : uint8_t { SpawnEntity = 1, DestroyEntity = 2, FrameSnapshot = 3, AssignPlayerEntity = 4 };
+ enum class NetMsgType : uint8_t {
+     SpawnEntity = 1,
+     DestroyEntity = 2,
+     FrameSnapshot = 3,
+     AssignPlayerEntity = 4,
+     LoadLevel = 5,
+     LoadZone = 6
+ };
 
 
 // ---------- Entity structures ----------
@@ -41,7 +48,15 @@ struct EntitySnapshot {
     uint8_t flags;                // e.g., bit0 = facing right
 };
 
+struct LoadLevelMessage {
+    uint32_t levelNumber;
+    float worldLeft, worldRight, worldTop, worldBottom;
+};
 
+struct LoadZoneMessage {
+    uint32_t zoneNumber;
+    // boundaries etc. can be added later
+};
 
 enum class AnimType : uint8_t {
     Idle = 0,
@@ -56,6 +71,7 @@ struct SpawnMessage {
     EntityType entityType;
     float x, y;
     uint8_t animation = 0;
+    uint32_t animStartTick = 0;
 };
 
 // Sent when an entity leaves (reliable)
@@ -98,3 +114,10 @@ sf::Packet& operator>>(sf::Packet& p, FrameSnapshot& snap);
 
 sf::Packet& operator<<(sf::Packet& p, const AssignPlayerMessage& msg); 
 sf::Packet& operator>>(sf::Packet& p, AssignPlayerMessage& msg);
+
+// serialisation operators (place after existing ones)
+sf::Packet& operator<<(sf::Packet& p, const LoadLevelMessage& msg);
+sf::Packet& operator>>(sf::Packet& p, LoadLevelMessage& msg);
+
+sf::Packet& operator<<(sf::Packet& p, const LoadZoneMessage& msg);
+sf::Packet& operator>>(sf::Packet& p, LoadZoneMessage& msg);

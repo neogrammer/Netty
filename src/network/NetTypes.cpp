@@ -45,11 +45,14 @@ sf::Packet& operator>>(sf::Packet& p, EntitySnapshot& s) {
 }
 
 // ---------- SpawnMessage ----------
+
 sf::Packet& operator<<(sf::Packet& p, const SpawnMessage& msg) {
-    return p << msg.entityId << msg.entityType << msg.x << msg.y << msg.animation;
+    return p << msg.entityId << msg.entityType << msg.x << msg.y
+        << msg.animation << msg.animStartTick;
 }
 sf::Packet& operator>>(sf::Packet& p, SpawnMessage& msg) {
-    return p >> msg.entityId >> msg.entityType >> msg.x >> msg.y >> msg.animation;
+    return p >> msg.entityId >> msg.entityType >> msg.x >> msg.y
+        >> msg.animation >> msg.animStartTick;
 }
 
 // ---------- DestroyMessage ----------
@@ -80,4 +83,19 @@ sf::Packet& operator<<(sf::Packet& p, const AssignPlayerMessage& msg) {
 }
 sf::Packet& operator>>(sf::Packet& p, AssignPlayerMessage& msg) {
     return p >> msg.entityId;
+}
+
+// serialisation operators (place after existing ones)
+sf::Packet& operator<<(sf::Packet& p, const LoadLevelMessage& msg) {
+    return p << msg.levelNumber << msg.worldLeft << msg.worldRight << msg.worldTop << msg.worldBottom;
+}
+sf::Packet& operator>>(sf::Packet& p, LoadLevelMessage& msg) {
+    return p >> msg.levelNumber >> msg.worldLeft >> msg.worldRight >> msg.worldTop >> msg.worldBottom;
+}
+
+sf::Packet& operator<<(sf::Packet& p, const LoadZoneMessage& msg) {
+    return p << msg.zoneNumber;
+}
+sf::Packet& operator>>(sf::Packet& p, LoadZoneMessage& msg) {
+    return p >> msg.zoneNumber;
 }

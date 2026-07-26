@@ -134,6 +134,7 @@ static void udp_game_server(sf::TcpSocket tcp_sockets[2],
         msg.entityType = etype;
         msg.x = x; msg.y = y;
         msg.animation = anim;
+        msg.animStartTick = e.animStartTick;
        
         sf::Packet spawnPacket;
         spawnPacket << NetMsgType::SpawnEntity << msg;
@@ -159,6 +160,15 @@ static void udp_game_server(sf::TcpSocket tcp_sockets[2],
         tcp_sockets[i].send(p);
     }
 
+
+    //// after assigning player entities
+    //LoadLevelMessage levelMsg{ 1 };   // zone 0
+    //for (int i = 0; i < 2; ++i) {
+    //    sf::Packet p;
+    //    p << NetMsgType::LoadLevel << levelMsg;
+    //    tcp_sockets[i].send(p);
+    //}
+
     // ---------- Main loop ----------
     const double TICK_DURATION = 1.0 / 60.0;
     const sf::Time TICK_TIME = sf::seconds(1.f / 60.f);
@@ -174,6 +184,8 @@ static void udp_game_server(sf::TcpSocket tcp_sockets[2],
     playerKnownEntities[1].insert(playerEntityId[0]);
     playerKnownEntities[1].insert(playerEntityId[1]);
 
+    bool playerReady[2] = { false, false };
+
     while (g_running) {
         sf::Time dt = gameClock.restart();
         accumulator += dt;
@@ -188,6 +200,31 @@ static void udp_game_server(sf::TcpSocket tcp_sockets[2],
         while (udp_socket.receive(buf, sizeof(buf) - 1, received,
             senderIp, senderPort) == sf::Socket::Status::Done) {
             buf[received] = '\0';
+
+            // Handle "READY" first
+            if (std::strcmp(buf, "READY") == 0) {
+                int idx = (senderPort == client_ports[0]) ? 0 :
+                    (senderPort == client_ports[1]) ? 1 : -1;
+                if (idx >= 0 && !playerReady[idx]) {
+                    playerReady[idx] = true;
+                    printf("[Server] Player %d is ready\n", idx);
+
+                    // When both are ready, send them into the game
+                    if (playerReady[0] && playerReady[1]) {
+                        // Send a LoadLevel (or LoadZone) to both clients
+                        LoadLevelMessage levelMsg{ 1 };   // level 1
+                        for (int i = 0; i < 2; ++i) {
+                            sf::Packet p;
+                            p << NetMsgType::LoadLevel << levelMsg;
+                            tcp_sockets[i].send(p);
+                        }
+                        printf("[Server] Both ready – loading zone 1\n");
+                    }
+                }
+                continue;   // don't try to parse this as movement input
+            }
+
+            // Existing movement input handling (unchanged)
             int playerIdx = (senderPort == client_ports[0]) ? 0 :
                 (senderPort == client_ports[1]) ? 1 : -1;
             if (playerIdx >= 0) {
@@ -195,6 +232,17 @@ static void udp_game_server(sf::TcpSocket tcp_sockets[2],
                 if (std::strchr(buf, 'R')) (playerIdx == 0 ? p0Dir : p1Dir) = 1;
             }
         }
+
+        //while (udp_socket.receive(buf, sizeof(buf) - 1, received,
+        //    senderIp, senderPort) == sf::Socket::Status::Done) {
+        //    buf[received] = '\0';
+        //    int playerIdx = (senderPort == client_ports[0]) ? 0 :
+        //        (senderPort == client_ports[1]) ? 1 : -1;
+        //    if (playerIdx >= 0) {
+        //        if (std::strchr(buf, 'L')) (playerIdx == 0 ? p0Dir : p1Dir) = -1;
+        //        if (std::strchr(buf, 'R')) (playerIdx == 0 ? p0Dir : p1Dir) = 1;
+        //    }
+        //}
 
         // ------- Fixed timestep -------
         while (accumulator >= sf::seconds(static_cast<float>(TICK_DURATION))) {

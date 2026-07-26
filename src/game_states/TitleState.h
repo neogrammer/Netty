@@ -1,7 +1,8 @@
-// PlayState.h
+// TitleState.h
 #pragma once
 #include <game_states/GameState.h>
 #include <network/NetTypes.h>
+#include <network/client/ClientContext.h>
 #include <entities/Entity.h>
 #include <entities/animation/AnimationSet.h>
 #include <SFML/Network.hpp>
@@ -13,7 +14,7 @@ class GameStateManager; // forward decl
 
 class TitleState : public IGameState {
 public:
-    TitleState(sf::RenderWindow* win, GameStateManager* gsm);
+    TitleState(sf::RenderWindow* win, ClientContext& ctx);
     void enter() override;
     void exit() override;
     void handleEvent(const sf::Event& event) override;
@@ -21,7 +22,6 @@ public:
     void draw(sf::RenderWindow& window) override;
 private:
     sf::RenderWindow* window;
-    GameStateManager* gsm;
-    sf::Font font{};
-
+    ClientContext& context;
+    sf::Text titleText, promptText;
 };
