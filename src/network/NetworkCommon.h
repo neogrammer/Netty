@@ -14,3 +14,9 @@ sf::UdpSocket tcp_handshake_client(const sf::IpAddress& server_ip,
     unsigned short* out_my_udp_port,
     int* out_player_id,
     sf::TcpSocket& out_tcp_socket);
+
+// Accepts exactly one player (blocking). Returns false on failure.
+bool tcp_accept_player(sf::TcpListener& listener,
+    sf::TcpSocket& out_socket,
+    unsigned short& out_client_udp_port,
+    int player_id);

@@ -85,3 +85,25 @@ sf::UdpSocket tcp_handshake_client(const sf::IpAddress& server_ip,
     out_tcp_socket = std::move(tcp_socket);
     return udp_socket;
 }
+
+bool tcp_accept_player(sf::TcpListener& listener,
+    sf::TcpSocket& out_socket,
+    unsigned short& out_client_udp_port,
+    int player_id)
+{
+    if (listener.accept(out_socket) != sf::Socket::Status::Done)
+        return false;
+
+    sf::Packet packet;
+    packet << player_id << static_cast<unsigned short>(57913);   // server UDP port
+    if (out_socket.send(packet) != sf::Socket::Status::Done)
+        return false;
+
+    packet.clear();
+    if (out_socket.receive(packet) != sf::Socket::Status::Done)
+        return false;
+    packet >> out_client_udp_port;
+
+    printf("[Server] Player %d registered (UDP port %d)\n", player_id, out_client_udp_port);
+    return true;
+}
